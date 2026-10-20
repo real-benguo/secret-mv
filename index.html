@@ -55,7 +55,7 @@
   /* 开场遮罩 */
   .gate{
     position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:linear-gradient(180deg,rgba(5,9,15,.55),rgba(5,9,15,.72));
+    background:linear-gradient(180deg,rgba(5,9,15,.30),rgba(5,9,15,.58));
     backdrop-filter:blur(2px);transition:opacity .5s ease,visibility .5s;z-index:4;
   }
   .gate.hide{opacity:0;visibility:hidden}
@@ -96,6 +96,7 @@
     opacity:0;transition:opacity .28s ease;
   }
   .stage:hover .bar,.bar.show,.stage.paused .bar{opacity:1}
+  .gate:not(.hide) ~ .bar{opacity:0!important;pointer-events:none}
   .seek{
     position:relative;height:16px;display:flex;align-items:center;cursor:pointer;
   }
