@@ -13,7 +13,7 @@
     --paper:#efe3cd; --cream:#f7f0e2; --mist:#9db8c4; --line:rgba(217,169,94,.22);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0;background:var(--ink);color:var(--cream)}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--cream);overflow-x:hidden;max-width:100%}
   body{
     font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",STSong,"SimSun",serif;
     -webkit-font-smoothing:antialiased;
@@ -23,7 +23,7 @@
       radial-gradient(ellipse 60% 40% at 80% 110%,rgba(60,110,130,.14),transparent 60%),
       var(--ink);
   }
-  .wrap{max-width:1240px;margin:0 auto;padding:clamp(20px,4vw,56px) clamp(14px,4vw,32px) 60px}
+  .wrap{max-width:1240px;width:100%;margin:0 auto;padding:clamp(20px,4vw,56px) clamp(14px,4vw,32px) 60px}
 
   /* ---------- 头部 ---------- */
   header{text-align:center;margin-bottom:clamp(20px,3.2vw,40px)}
@@ -152,6 +152,14 @@
   .note em{font-style:normal;color:rgba(217,169,94,.72)}
 
   footer{text-align:center;margin-top:40px;color:rgba(157,184,196,.38);font-size:11px;letter-spacing:.24em}
+  @media(max-width:520px){
+    h1{letter-spacing:10px;text-indent:10px}
+    .meta{gap:8px 14px;font-size:12px;letter-spacing:.1em}
+    .note{font-size:11.5px;line-height:2;padding:0 2px}
+    .acts{gap:10px}
+    .btn{padding:10px 16px;font-size:12px;letter-spacing:.08em}
+    footer{font-size:9px;letter-spacing:.16em}
+  }
 </style>
 </head>
 <body>
