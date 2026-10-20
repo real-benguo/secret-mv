@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>不能说的秘密 · MV</title>
+<meta name="description" content="周杰伦《不能说的秘密》— 粉丝二创动画 MV。全片程序化绘制，歌词逐句同步。" />
+<meta name="theme-color" content="#05090f" />
+<link rel="preload" href="secret-web.mp4" as="video" type="video/mp4" />
+<style>
+  :root{
+    --ink:#05090f; --night:#0a121c; --gold:#d9a95e; --amber:#e8b96b;
+    --paper:#efe3cd; --cream:#f7f0e2; --mist:#9db8c4; --line:rgba(217,169,94,.22);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--cream)}
+  body{
+    font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",STSong,"SimSun",serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%,rgba(217,169,94,.10),transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%,rgba(60,110,130,.14),transparent 60%),
+      var(--ink);
+  }
+  .wrap{max-width:1240px;margin:0 auto;padding:clamp(20px,4vw,56px) clamp(14px,4vw,32px) 60px}
+
+  /* ---------- 头部 ---------- */
+  header{text-align:center;margin-bottom:clamp(20px,3.2vw,40px)}
+  h1{
+    margin:0;
+    font-size:clamp(30px,5.4vw,58px);
+    font-weight:500;
+    letter-spacing:clamp(6px,1.6vw,22px);
+    text-indent:clamp(6px,1.6vw,22px);
+    color:var(--cream);
+    text-shadow:0 2px 30px rgba(0,0,0,.9),0 0 70px rgba(217,169,94,.22);
+  }
+  .sub{
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    margin-top:14px;color:var(--gold);font-size:clamp(10px,1.2vw,13px);letter-spacing:.42em;
+  }
+  .sub i{display:block;width:clamp(30px,8vw,80px);height:1px;background:linear-gradient(90deg,transparent,rgba(217,169,94,.8))}
+  .sub i.r{background:linear-gradient(270deg,transparent,rgba(217,169,94,.8))}
+
+  /* ---------- 播放器 ---------- */
+  .stage{
+    position:relative;width:100%;aspect-ratio:16/9;background:#000;
+    border-radius:14px;overflow:hidden;
+    box-shadow:0 30px 90px -20px rgba(0,0,0,.9),0 0 0 1px rgba(217,169,94,.16),0 0 90px -30px rgba(217,169,94,.3);
+    cursor:pointer;
+  }
+  video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+
+  /* 开场遮罩 */
+  .gate{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,rgba(5,9,15,.55),rgba(5,9,15,.72));
+    backdrop-filter:blur(2px);transition:opacity .5s ease,visibility .5s;z-index:4;
+  }
+  .gate.hide{opacity:0;visibility:hidden}
+  .playbtn{
+    width:clamp(64px,9vw,92px);height:clamp(64px,9vw,92px);border-radius:50%;
+    border:1px solid rgba(217,169,94,.55);background:rgba(10,18,28,.55);
+    display:grid;place-items:center;cursor:pointer;
+    box-shadow:0 0 0 0 rgba(217,169,94,.4);animation:pulse 2.8s ease-out infinite;
+    transition:transform .25s ease,background .25s;
+  }
+  .playbtn:hover{transform:scale(1.07);background:rgba(217,169,94,.16)}
+  .playbtn svg{margin-left:4px}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(217,169,94,.35)}
+    70%{box-shadow:0 0 0 26px rgba(217,169,94,0)}
+    100%{box-shadow:0 0 0 0 rgba(217,169,94,0)}
+  }
+  .gate p{margin:20px 0 0;color:var(--mist);font-size:13px;letter-spacing:.3em;opacity:.8}
+
+  /* 歌词浮层 */
+  .lyric{
+    position:absolute;left:0;right:0;bottom:clamp(58px,9%,86px);
+    text-align:center;pointer-events:none;z-index:3;
+    font-size:clamp(14px,2.15vw,30px);letter-spacing:.14em;
+    color:#f7f0e2;text-shadow:0 2px 18px rgba(0,0,0,.95),0 0 40px rgba(0,0,0,.8);
+    opacity:0;transition:opacity .35s ease,transform .35s ease;
+    padding:0 6%;
+  }
+  .lyric.on{opacity:1}
+  .lyric span{display:inline-block;transform:translateY(6px);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+  .lyric.on span{transform:translateY(0)}
+
+  /* 控制条 */
+  .bar{
+    position:absolute;left:0;right:0;bottom:0;z-index:5;
+    padding:26px 14px 12px;
+    background:linear-gradient(180deg,transparent,rgba(3,6,10,.82) 55%,rgba(3,6,10,.95));
+    opacity:0;transition:opacity .28s ease;
+  }
+  .stage:hover .bar,.bar.show,.stage.paused .bar{opacity:1}
+  .seek{
+    position:relative;height:16px;display:flex;align-items:center;cursor:pointer;
+  }
+  .track{position:relative;flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.16);overflow:visible}
+  .buf{position:absolute;inset:0;width:0;background:rgba(255,255,255,.16);border-radius:3px}
+  .fill{position:absolute;inset:0;width:0;background:linear-gradient(90deg,#b8863f,var(--amber));border-radius:3px;box-shadow:0 0 10px rgba(217,169,94,.6)}
+  .knob{
+    position:absolute;top:50%;left:0;width:11px;height:11px;border-radius:50%;background:var(--cream);
+    transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(232,185,107,.9);opacity:0;transition:opacity .2s
+  }
+  .seek:hover .knob{opacity:1}
+  .row{display:flex;align-items:center;gap:14px;margin-top:6px;color:var(--cream);font-size:12.5px;letter-spacing:.06em}
+  .ico{
+    width:32px;height:32px;display:grid;place-items:center;border-radius:8px;cursor:pointer;
+    color:rgba(247,240,226,.82);transition:color .2s,background .2s;flex:0 0 auto;
+  }
+  .ico:hover{color:var(--cream);background:rgba(255,255,255,.08)}
+  .ico.act{color:var(--gold)}
+  .time{font-variant-numeric:tabular-nums;color:rgba(247,240,226,.72);font-size:12px;letter-spacing:.04em}
+  .spacer{flex:1}
+  .vol{display:flex;align-items:center;gap:8px}
+  .vol input{
+    -webkit-appearance:none;appearance:none;width:72px;height:3px;border-radius:3px;
+    background:rgba(255,255,255,.2);outline:none;cursor:pointer
+  }
+  .vol input::-webkit-slider-thumb{-webkit-appearance:none;width:9px;height:9px;border-radius:50%;background:var(--cream)}
+  .vol input::-moz-range-thumb{width:9px;height:9px;border:0;border-radius:50%;background:var(--cream)}
+  @media(max-width:640px){.vol{display:none}}
+
+  /* ---------- 信息 ---------- */
+  .meta{
+    display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:center;align-items:center;
+    margin-top:26px;color:var(--mist);font-size:13px;letter-spacing:.16em
+  }
+  .meta b{color:var(--paper);font-weight:400}
+  .meta .dot{width:3px;height:3px;border-radius:50%;background:rgba(217,169,94,.5)}
+
+  .acts{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:11px 22px;border-radius:999px;text-decoration:none;
+    border:1px solid var(--line);color:var(--paper);font-size:13px;letter-spacing:.14em;
+    background:rgba(255,255,255,.03);transition:.22s;font-family:inherit;cursor:pointer
+  }
+  .btn:hover{border-color:rgba(217,169,94,.65);background:rgba(217,169,94,.12);color:var(--cream)}
+  .btn.primary{background:rgba(217,169,94,.14);border-color:rgba(217,169,94,.45)}
+
+  .note{
+    margin:46px auto 0;max-width:760px;text-align:center;
+    color:rgba(157,184,196,.62);font-size:12px;line-height:2.1;letter-spacing:.1em;
+  }
+  .note hr{border:0;border-top:1px solid rgba(217,169,94,.14);margin:26px auto;width:120px}
+  .note em{font-style:normal;color:rgba(217,169,94,.72)}
+
+  footer{text-align:center;margin-top:40px;color:rgba(157,184,196,.38);font-size:11px;letter-spacing:.24em}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>不能说的秘密</h1>
+    <div class="sub"><i></i><span>SECRET · 2007</span><i class="r"></i></div>
+  </header>
+
+  <div class="stage paused" id="stage">
+    <video id="v" playsinline preload="metadata" poster="poster.jpg" src="secret-web.mp4"></video>
+
+    <div class="lyric" id="lyric"><span></span></div>
+
+    <div class="gate" id="gate">
+      <div class="playbtn" id="bigPlay" role="button" aria-label="播放">
+        <svg width="30" height="34" viewBox="0 0 30 34" fill="none"><path d="M2 2.6c0-1.4 1.5-2.3 2.8-1.6l22 13.4c1.3.8 1.3 2.6 0 3.4l-22 13.4C3.5 31.9 2 31 2 29.6V2.6Z" fill="#e8b96b"/></svg>
+      </div>
+      <p>点击播放 · 戴上耳机</p>
+    </div>
+
+    <div class="bar" id="bar">
+      <div class="seek" id="seek">
+        <div class="track"><div class="buf" id="buf"></div><div class="fill" id="fill"></div><div class="knob" id="knob"></div></div>
+      </div>
+      <div class="row">
+        <div class="ico" id="play" role="button" aria-label="播放/暂停">
+          <svg id="icoPlay" width="16" height="18" viewBox="0 0 16 18" fill="currentColor"><path d="M1 1.8c0-.9 1-1.5 1.8-1L14.3 8c.8.5.8 1.6 0 2.1L2.8 17.2c-.8.5-1.8-.1-1.8-1V1.8Z"/></svg>
+          <svg id="icoPause" width="16" height="18" viewBox="0 0 16 18" fill="currentColor" style="display:none"><rect x="1" y="1" width="4.6" height="16" rx="1.2"/><rect x="10.4" y="1" width="4.6" height="16" rx="1.2"/></svg>
+        </div>
+        <span class="time"><span id="cur">0:00</span> / <span id="dur">4:54</span></span>
+        <div class="spacer"></div>
+        <div class="ico act" id="lyricBtn" role="button" aria-label="歌词" title="显示/隐藏歌词">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 5h12M3 9h9M3 13h6"/></svg>
+        </div>
+        <div class="vol">
+          <div class="ico" id="muteBtn" role="button" aria-label="静音">
+            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3 6.5h3L10 3v12L6 11.5H3z"/><path id="wave" d="M12.6 6.2a4 4 0 0 1 0 5.6"/></svg>
+          </div>
+          <input id="vol" type="range" min="0" max="1" step="0.01" value="1" aria-label="音量">
+        </div>
+        <div class="ico" id="fs" role="button" aria-label="全屏">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.5 2H2v4.5M11.5 2H16v4.5M6.5 16H2v-4.5M11.5 16H16v-4.5"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <span>作词 <b>方文山</b></span><span class="dot"></span>
+    <span>作曲 <b>周杰伦</b></span><span class="dot"></span>
+    <span>编曲 <b>林迈可</b></span><span class="dot"></span>
+    <span>片长 <b>4:54</b></span><span class="dot"></span>
+    <span>1080P</span>
+  </div>
+
+  <div class="acts">
+    <a class="btn primary" href="secret-web.mp4" download="不能说的秘密_MV.mp4">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5v9M4.5 7 8 10.5 11.5 7M2 13.5h12"/></svg>
+      下载 MP4
+    </a>
+    <button class="btn" id="share">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12.5" cy="3" r="2"/><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="13" r="2"/><path d="M5.3 7 10.7 4M5.3 9l5.4 3"/></svg>
+      复制链接
+    </button>
+  </div>
+
+  <div class="note">
+    画面全部由代码逐帧绘制，无一处实拍素材。分镜按歌词写：琴弦里的光、雨夜的冷咖啡、课桌上立可白写的字、
+    屋檐下的两个剪影、倒着走的钟、五线谱上浮起的音符、落叶变成玻璃碎片、海边的白钢琴与一个玻璃瓶。
+    <hr>
+    <em>本片为粉丝二创动画，非官方 MV。歌曲版权归杰威尔音乐及原作者所有。</em>
+  </div>
+
+  <footer>ANIMATED MUSIC VIDEO · MADE FRAME BY FRAME</footer>
+</div>
+
+<script>
+const LYRICS = [[13.67,"冷咖啡离开了杯垫"],[17.21,"我忍住的情绪在很后面"],[27.02,"拼命想挽回的从前"],[30.55,"在我脸上依旧清晰可见"],[40.33,"最美的不是下雨天"],[43.85,"是曾与你躲过雨的屋檐"],[52.61,"回忆的画面"],[57.23,"在荡着秋千 梦开始不甜"],[65.1,"你说把爱渐渐 放下会走更远"],[71.78,"又何必去改变 已错过的时间"],[78.41,"你用你的指尖"],[81.77,"阻止我说再见"],[85.07,"想象你在身边 在完全失去之前"],[91.75,"你说把爱渐渐 放下会走更远"],[98.41,"或许命运的签 只让我们遇见"],[105.08,"只让我们相恋"],[108.41,"这一季的秋天"],[111.76,"飘落后才发现 这幸福的碎片"],[118.4,"要我怎么捡"],[147.03,"冷咖啡离开了杯垫"],[150.5,"我忍住的情绪在很后面"],[160.3,"拼命想挽回的从前"],[163.84,"在我脸上依旧清晰可见"],[173.7,"最美的不是下雨天"],[177.19,"是曾与你躲过雨的屋檐"],[185.87,"回忆的画面"],[190.48,"在荡着秋千 梦开始不甜"],[198.37,"你说把爱渐渐 放下会走更远"],[205.09,"又何必去改变 已错过的时间"],[211.74,"你用你的指尖"],[215.04,"阻止我说再见"],[218.39,"想象你在身边 在完全失去之前"],[225.02,"你说把爱渐渐 放下会走更远"],[231.69,"或许命运的签 只让我们遇见"],[238.38,"只让我们相恋"],[241.69,"这一季的秋天"],[245.03,"飘落后才发现 这幸福的碎片"],[251.69,"要我怎么捡"]];
+
+const v=document.getElementById('v'), stage=document.getElementById('stage');
+const gate=document.getElementById('gate'), bigPlay=document.getElementById('bigPlay');
+const bar=document.getElementById('bar'), seek=document.getElementById('seek');
+const fill=document.getElementById('fill'), buf=document.getElementById('buf'), knob=document.getElementById('knob');
+const cur=document.getElementById('cur'), dur=document.getElementById('dur');
+const icoPlay=document.getElementById('icoPlay'), icoPause=document.getElementById('icoPause');
+const lyricEl=document.getElementById('lyric'), lyricBtn=document.getElementById('lyricBtn');
+const volInput=document.getElementById('vol'), muteBtn=document.getElementById('muteBtn'), wave=document.getElementById('wave');
+
+const fmt=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+let showLyric=true, lastIdx=-2, hideTimer=null;
+
+function play(){v.play().catch(()=>{});}
+function toggle(){v.paused?play():v.pause();}
+function setUI(){
+  const p=v.paused;
+  stage.classList.toggle('paused',p);
+  icoPlay.style.display=p?'':'none';
+  icoPause.style.display=p?'none':'';
+}
+bigPlay.onclick=e=>{e.stopPropagation();gate.classList.add('hide');play();};
+gate.onclick=e=>{e.stopPropagation();gate.classList.add('hide');play();};
+stage.onclick=()=>{if(!gate.classList.contains('hide')){gate.classList.add('hide');play();}else toggle();};
+document.getElementById('play').onclick=e=>{e.stopPropagation();toggle();};
+
+v.addEventListener('play',()=>{gate.classList.add('hide');setUI();});
+v.addEventListener('pause',setUI);
+v.addEventListener('loadedmetadata',()=>{dur.textContent=fmt(v.duration);});
+v.addEventListener('timeupdate',()=>{
+  const r=v.duration?v.currentTime/v.duration:0;
+  fill.style.width=(r*100)+'%'; knob.style.left=(r*100)+'%';
+  cur.textContent=fmt(v.currentTime);
+  updateLyric();
+});
+v.addEventListener('progress',()=>{
+  if(v.buffered.length) buf.style.width=(v.buffered.end(v.buffered.length-1)/v.duration*100)+'%';
+});
+
+function updateLyric(){
+  if(!showLyric){lyricEl.classList.remove('on');return;}
+  const t=v.currentTime;
+  let idx=-1;
+  for(let i=0;i<LYRICS.length;i++) if(t>=LYRICS[i][0]) idx=i;
+  if(idx<0){lyricEl.classList.remove('on');lastIdx=-1;return;}
+  const next=LYRICS[idx+1];
+  const end=next?Math.min(next[0],LYRICS[idx][0]+7):LYRICS[idx][0]+6;
+  if(t>end){lyricEl.classList.remove('on');return;}
+  if(idx!==lastIdx){
+    lastIdx=idx;
+    lyricEl.classList.remove('on');
+    setTimeout(()=>{lyricEl.querySelector('span').textContent=LYRICS[idx][1];lyricEl.classList.add('on');},120);
+  }
+}
+lyricBtn.onclick=e=>{e.stopPropagation();showLyric=!showLyric;lyricBtn.classList.toggle('act',showLyric);lastIdx=-2;updateLyric();};
+
+/* 拖动进度 */
+let dragging=false;
+const at=e=>{
+  const r=seek.getBoundingClientRect();
+  const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  return Math.min(1,Math.max(0,x/r.width));
+};
+const start=e=>{dragging=true;v.currentTime=at(e)*v.duration;e.preventDefault();};
+seek.addEventListener('mousedown',e=>{start(e);});
+window.addEventListener('mousemove',e=>{if(dragging)v.currentTime=at(e)*v.duration;});
+window.addEventListener('mouseup',()=>{dragging=false;});
+seek.addEventListener('touchstart',e=>{start(e);},{passive:false});
+seek.addEventListener('touchmove',e=>{if(dragging){v.currentTime=at(e)*v.duration;e.preventDefault();}},{passive:false});
+seek.addEventListener('touchend',()=>{dragging=false;});
+
+/* 音量 */
+volInput.oninput=()=>{v.volume=parseFloat(volInput.value);v.muted=v.volume===0;syncMute();};
+muteBtn.onclick=e=>{e.stopPropagation();v.muted=!v.muted;syncMute();};
+function syncMute(){
+  const m=v.muted||v.volume===0;
+  wave.style.display=m?'none':'';
+  muteBtn.style.opacity=m?.45:1;
+}
+syncMute();
+
+/* 全屏 */
+document.getElementById('fs').onclick=e=>{
+  e.stopPropagation();
+  const el=stage;
+  if(document.fullscreenElement){document.exitFullscreen();}
+  else if(el.requestFullscreen){el.requestFullscreen();}
+  else if(v.webkitEnterFullscreen){v.webkitEnterFullscreen();}
+};
+
+/* 键盘 */
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.code==='Space'){e.preventDefault();toggle();}
+  if(e.code==='ArrowRight'){v.currentTime=Math.min(v.duration,v.currentTime+5);}
+  if(e.code==='ArrowLeft'){v.currentTime=Math.max(0,v.currentTime-5);}
+});
+
+/* 控制条自动隐藏 */
+function poke(){bar.classList.add('show');clearTimeout(hideTimer);hideTimer=setTimeout(()=>{if(!v.paused)bar.classList.remove('show');},2600);}
+stage.addEventListener('mousemove',poke);
+stage.addEventListener('touchstart',poke);
+
+/* 分享 */
+document.getElementById('share').onclick=async()=>{
+  const b=document.getElementById('share');
+  try{await navigator.clipboard.writeText(location.href);}
+  catch(_){const t=document.createElement('textarea');t.value=location.href;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();}
+  const old=b.innerHTML;b.innerHTML='已复制 ✓';
+  setTimeout(()=>b.innerHTML=old,1600);
+};
+setUI();
+</script>
+</body>
+</html>
